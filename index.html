@@ -72,6 +72,7 @@ body.bw-active #app-container {
 }
 
 .panel-controls {
+  position: relative;
   flex: 1;
   background: rgba(0,0,0,0.35);
   backdrop-filter: blur(12px);
@@ -201,6 +202,41 @@ input[type="text"]:focus { border-color: #5c6ef8; min-width: 0; }
   margin-bottom: -1vh;
 }
 
+.push-btn {
+  background: transparent;
+  color: #888;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 0.2vh 0.6vh;
+  font-size: 1.2vh;
+  font-family: monospace;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.push-btn:hover {
+  background: #555;
+  color: #fff;
+  border-color: #777;
+}
+
+/* Absolutely positioned relative to .panel-controls, so they float
+   over the corner of the input section instead of taking up flex
+   space and squashing the inputs around them */
+#push-down-btn,
+#push-up-btn {
+  display: none;
+  position: absolute;
+  left: 1vh;
+  z-index: 4;
+}
+#push-down-btn {
+  bottom: 1vh;
+}
+#push-up-btn {
+  top: 1vh;
+}
+
 .deltae-bar {
   display: none;
   flex-direction: column;
@@ -298,12 +334,14 @@ input[type="text"]:focus { border-color: #5c6ef8; min-width: 0; }
           <div class="input-group"><label>L</label><input type="text" class="l-hsl-input" maxlength="3"></div>
         </div>
       </div>
+      <button id="push-down-btn" class="push-btn">PUSH &darr;</button>
     </div>
   </div>
 
   <div class="picker-row" id="row-b" style="display:none">
     <div class="panel-wheel"><canvas class="wheel-canvas"></canvas></div>
     <div class="panel-controls">
+      <button id="push-up-btn" class="push-btn">PUSH &uarr;</button>
       <div class="panel-inner">
         <div class="picker-title">Sample</div>
         <div class="color-preview-row">
@@ -795,8 +833,31 @@ const bwBtn = document.getElementById('bw-toggle');
 const pickerA = createPicker(rowA);
 const pickerB = createPicker(rowB);
 
+const pushDownBtn = document.getElementById('push-down-btn');
+const pushUpBtn = document.getElementById('push-up-btn');
+
+// Target the hex inputs using their existing row containers and classes
+const hexA = document.querySelector('#row-a .hex-input'); 
+const hexB = document.querySelector('#row-b .hex-input'); 
+
+// Push A down to B
+pushDownBtn.addEventListener('click', () => {
+  hexB.value = hexA.value;
+  // Dispatch 'change' so the color wheel and sliders actually update
+  hexB.dispatchEvent(new Event('change')); 
+});
+
+// Push B up to A
+pushUpBtn.addEventListener('click', () => {
+  hexA.value = hexB.value;
+  // Dispatch 'change' so the color wheel and sliders actually update
+  hexA.dispatchEvent(new Event('change')); 
+});
+
+
 let bwActive = false;
 let compareMode = false;
+let PushBtn = false;
 let sliderDirection = { L: 0, a: 1, b: 0 };
 let anchorHSL = { h: 0, s: 0, l: 0 }; 
 let isLinked = true; 
@@ -936,13 +997,19 @@ modeBtn.addEventListener('click', () => {
   rowB.style.display = compareMode ? 'flex' : 'none';
   deltaeBar.style.display = compareMode ? 'flex' : 'none';
   bwBtn.style.display = compareMode ? 'block' : 'none';
+  pushDownBtn.style.display = compareMode ? 'block' : 'none';
+  pushUpBtn.style.display = compareMode ? 'block' : 'none';
 
   if (!compareMode && bwActive) {
     bwActive = false;
+
     document.body.classList.remove('bw-active');
+    document.body.classList.remove('pushbtn-active');
+
     bwBtn.style.borderColor = '';
     bwBtn.style.color = '#eee';
     bwBtn.textContent = 'B&W';
+
   }
 
   rowA.classList.toggle('compare-active', compareMode);
