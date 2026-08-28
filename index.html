@@ -443,7 +443,7 @@ function rgbToHsv(r, g, b) {
     if(max===r) h=((g-b)/d)%6;
     else if(max===g) h=(b-r)/d+2;
     else h=(r-g)/d+4;
-    h=Math.round(h*60); if(h<0) h+=360;
+    h=(h*60); if(h<0) h+=360;
   }
   return { h, s, v };
 }
@@ -684,7 +684,7 @@ function createPicker(row) {
     const { r, g, b } = hsvToRgb(state.hue, state.sat, state.val);
     const hex = toHex(r, g, b);
     const hsl = rgbToHsl(r, g, b);
-    hexInput.value = hex;
+    hexInput.value = hex.toUpperCase();
     rInput.value = r;
     gInput.value = g;
     bInput.value = b;
